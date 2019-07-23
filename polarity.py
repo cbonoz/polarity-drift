@@ -123,7 +123,7 @@ class Polarity:
         url = "%s/%s/messages" % (CONVERSATION_BASE_URL, conversation_id)
         # access_token = token_obj['accessToken']
         access_token = self.token_manager.get_testing_token()
-        r = requests.post(url, data=message, headers=get_drift_header(access_token)) 
+        r = requests.post(url, data=json.loads(message), headers=get_drift_header(access_token)) 
         if r.status_code != 200:
             print('post message request failed', r.status_code, r.reason)
             # get new token and retry request.

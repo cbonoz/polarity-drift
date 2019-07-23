@@ -6,7 +6,7 @@ import json
 from polarity import Polarity
 
 app = Flask(__name__)
-PORT = 3001
+PORT = os.getenv("POL_PORT", 3001)
 
 # Helper class object for parsing sentiment from conversations
 p = Polarity()
