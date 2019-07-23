@@ -2,6 +2,7 @@ from textblob import TextBlob
 import urllib.parse as urlparse
 import os
 import requests
+import json
 # import boto3
 from token_manager import TokenManager
 from drift import Drift
@@ -24,7 +25,7 @@ def generateResponse(statusCode, body):
     }
 
 def get_drift_header(token):
-    return { "Authorization": "Bearer %s" % token }
+    return { "Authorization": "Bearer %s" % token, "Content-Type": 'application/json' }
 
 class Polarity:
 
@@ -73,7 +74,7 @@ class Polarity:
             else:
                 last_line = "Try to keep the conversation more positive to maintain a good impression."
 
-        return "<br/><b>Polarity (%.1f): %s</b><br/>" % (avg, last_line)
+        return "<br/><b>Polarity</b> Summary: <br/>Average score: %s<br/>%s" % (avg, last_line)
        
     def get_polarity_summary(self, messages):
         if not messages:
@@ -99,7 +100,7 @@ class Polarity:
             else:
                 msg = "{:<10}{:10}|{}".format(author_id, "", bars)
 
-            msg = msg.replace(' ','&nbsp;')
+            msg = msg.replace(' ','*')
             lines.append(msg)
 
         summary_line = self.get_summary_line(polarities)
@@ -117,13 +118,14 @@ class Polarity:
     
     # send message with retry
     def send_message(self, org, conversation_id, message):
-        print('sending', org, conversation_id, message)
+        print('sending message\n', org, conversation_id, message)
         # token_obj = self.token_manager.get_token(org)
         url = "%s/%s/messages" % (CONVERSATION_BASE_URL, conversation_id)
         # access_token = token_obj['accessToken']
         access_token = self.token_manager.get_testing_token()
         r = requests.post(url, data=message, headers=get_drift_header(access_token)) 
-        if (r.status_code != 200):
+        if r.status_code != 200:
+            print('post message request failed', r.status_code, r.reason)
             # get new token and retry request.
             refresh_token = token_obj['refreshToken']
             r = requests.post(OAUTH_URL, data=self.token_manager.post_refresh_data(refresh_token))
@@ -131,9 +133,7 @@ class Polarity:
             new_access_token = data['accessToken']
             self.token_manager.save_org_token(data['orgId'], new_access_token, data['refreshToken'])
             r = requests.post(url, data=message, headers=get_drift_header(new_access_token))
-
-        print('send_message', r.status_code, r.text)
-
+        print('sent message')
 
     def generate_drift_message(self, org, message):
         return """{
