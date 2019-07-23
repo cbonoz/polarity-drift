@@ -117,7 +117,8 @@ class Polarity:
                 response = requests.get(url, headers=get_drift_header(self.token_manager.get_testing_token()))
                 if response.status_code == 200:
                     data = response.json()
-                    author_label = data.get('email', 'Site Visitor')
+                    if data['data']['attributes']['email'] is not None:
+                        author_label = data['data']['attributes']['email']
 
             blob = TextBlob(text)
             polarity = blob.sentiment.polarity
