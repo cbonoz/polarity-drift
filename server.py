@@ -43,8 +43,9 @@ def events():
         p.send_message(org, conversation_id, drift_message)
         # no response needed.
 
+res = p.generate_chart([])
+print(res)
+
 if __name__ == '__main__':
       app.run(port=PORT)
       print("Polarity server started on port %d!" % PORT)
-
-
