@@ -1,5 +1,4 @@
 from textblob import TextBlob
-import psycopg2
 import urllib.parse as urlparse
 import os
 import requests
@@ -21,15 +20,6 @@ user = url.username
 password = url.password
 host = url.hostname
 port = url.port
-
-conn =  psycopg2.connect(
-            dbname=dbname,
-            user=user,
-            password=password,
-            host=host,
-            port=port
-            )
-cur = conn.cursor()
 
 def get_token(org):
     cmd = "select * from %s where org = %d limit 1"
