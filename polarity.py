@@ -2,6 +2,7 @@ from textblob import TextBlob
 import urllib.parse as urlparse
 import os
 import requests
+import re 
 import json
 # import boto3
 from token_manager import TokenManager
@@ -16,6 +17,11 @@ CONVERSATION_BASE_URL =  "%s/v1/conversations" % BASE_URL
 CONTACT_URL = "%s/contacts" % BASE_URL
 USER_URL = "%s/users/list" % BASE_URL
 TABLE_NAME = "polarity"
+
+EMAIL_WIDTH = 20
+MIDDLE_WIDTH = 31
+LINE_WIDTH = 79
+TEXT_WIDTH = max(LINE_WIDTH - MIDDLE_WIDTH - EMAIL_WIDTH, 0)
 
 def generateHTMLResponse(statusCode, body):
     return {
@@ -103,7 +109,7 @@ class Polarity:
         lines = []
         polarities = []
         for i, message in enumerate(messages):
-            if 'body' not in message:
+            if 'body' not in message and message['type'] == 'chat':
                 continue
 
             text = message['body']
@@ -118,20 +124,21 @@ class Polarity:
                 if response.status_code == 200:
                     data = response.json()
                     author_label = data.get('email', 'Site Visitor')
-
+            text = re.sub('<[^<]+?>', '', text)
             blob = TextBlob(text)
             polarity = blob.sentiment.polarity
             polarities.append(polarity)
-            mag = int(round(abs(polarity) * 10, 0))
+            mag = int(abs(polarity) * 10)
             # print('polarity', polarity, text)
             bars = mag * "*"
-            msg = None
             if polarity < 0:
-                msg = "{:<10}{:>10}|".format(author_label, bars)
+                graph = "{0:>10}|{1:<10}".format(bars, " "*10)
             else:
-                msg = "{:<10}{:10}|{}".format(author_label, "", bars)
+                graph = "{0:>10}|{1:<10}".format(" "*10, bars)
+            text_visible_len = min(len(text), TEXT_WIDTH)
+            msg = "{0:<{x}}{1:^{y}}{2:>{z}}".format(author_label, graph, text[:text_visible_len], x=EMAIL_WIDTH, y=MIDDLE_WIDTH, z=TEXT_WIDTH)
 
-            msg = msg.replace(' ','*')
+            # msg = msg.replace(' ','*')
             lines.append(msg)
 
         summary_line = self.get_summary_line(polarities)
