@@ -3,6 +3,7 @@ import urllib.parse as urlparse
 import os
 import requests
 import boto3
+from token_manager import TokenManager
 from drift import Drift
 
 POLARITY_ENV_VAR = os.getenv('POL_ENV', 'qa')
@@ -13,34 +14,6 @@ CONVERSATION_BASE_URL =  "%s/v1/conversations" % BASE_URL
 TABLE_NAME = "polarity"
 
 S3_BUCKET = os.getenv('POL_BUCKET', 'test-drift-bucket')
-CLIENT_ID = os.getenv('POL_ID', '')
-CLIENT_SECRET = os.getenv('POL_SECRET', '')
-
-def get_token(org):
-    cmd = "select * from %s where org = %d limit 1"
-    cur.execute(cmd)
-    entry = cur.fetchone()
-    return {
-        "org": entry[0],
-        "accessToken": entry[1],
-        "refreshToken": entry[2]
-    }
-
-def post_token_data(code):
-    return {
-        "clientId": CLIENT_ID,
-        "clientSecret": CLIENT_SECRET,
-        "code": code,
-        "grantType": "authorization_code"
-    }
-
-def post_refresh_data(refresh):
-    return {
-        "clientId": CLIENT_ID,
-        "clientSecret": CLIENT_SECRET,
-        "refreshToken": refresh,
-        "grantType": "refresh_token"
-    }
 
 
 def generateResponse(statusCode, body):
@@ -55,16 +28,10 @@ def generateResponse(statusCode, body):
 def get_drift_header(token):
     return { "Authorization": "Bearer %s" % token }
 
-def save_org_token(org, access, refresh):
-    # clear existing entry for org if present.
-    cmd = "delete from %s where org = %d" % (TABLE_NAME, org)
-    cur.execute(cmd)
-    cmd = """insert into %s (org, accessToken, refreshToken) values (%s, "%s", "%s")""" % (TABLE_NAME, org, access, refresh)
-    cur.execute(cmd)
-    
 class Polarity:
 
     def __init__(self):
+        self.token_manager = TokenManager()
         self.s3 = boto3.resource('s3')
         self.file_bucket = self.s3.Bucket(S3_BUCKET)
         self.drift_client = None
@@ -82,14 +49,14 @@ class Polarity:
         return response.json()
 
     def request_token(self, code):
-        r = requests.post(OAUTH_URL, data=post_token_data(code))
+        r = requests.post(OAUTH_URL, data=self.token_manager.post_token_data(code))
         if (r.status_code != 200):
             return generateResponse(500, "<h3>Error registering:</h3><p>%s</p>" %r.text)
 
         data = r.json()
 
         self.drift_client = Drift(data['accessToken'])
-        save_org_token(data['orgId'], data['accessToken'], data['refreshToken'])
+        self.token_manager.save_org_token(data['orgId'], data['accessToken'], data['refreshToken'])
         return generateResponse(200, self.success_html)
 
     def get_summary_line(self, polarities):
@@ -151,17 +118,17 @@ class Polarity:
     
     # send message with retry
     def send_message(self, org, conversation_id, message):
-        token_obj = get_token(org)
+        token_obj = self.token_manager.get_token(org)
         url = "%s/%s/messages" % (CONVERSATION_BASE_URL, conversation_id)
         access_token = token_obj['accessToken']
         refresh_token = token_obj['refreshToken']
         r = requests.post(url, data=message, headers=get_drift_header(access_token)) 
         if (r.status_code != 200):
             # get new token and retry request.
-            r = requests.post(OAUTH_URL, data=post_refresh_data(refresh_token))
+            r = requests.post(OAUTH_URL, data=self.token_manager.post_refresh_data(refresh_token))
             data = r.json()
             new_access_token = data['accessToken']
-            save_org_token(data['orgId'], new_access_token, data['refreshToken'])
+            self.token_manager.save_org_token(data['orgId'], new_access_token, data['refreshToken'])
             r = requests.post(url, data=message, headers=get_drift_header(new_access_token))
 
         print('send_message', r.status_code, r.text)
