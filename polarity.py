@@ -124,6 +124,10 @@ class Polarity:
                 if response.status_code == 200:
                     data = response.json()
                     author_label = data.get('email', 'Site Visitor')
+                    visitor_email = data['data']['attributes']['email']
+                    if visitor_email:
+                        author_label = visitor_email
+
             text = re.sub('<[^<]+?>', '', text)
             blob = TextBlob(text)
             polarity = blob.sentiment.polarity
