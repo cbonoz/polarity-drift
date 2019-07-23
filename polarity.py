@@ -117,14 +117,15 @@ class Polarity:
     
     # send message with retry
     def send_message(self, org, conversation_id, message):
+        print('sending', org, conversation_id, message)
         # token_obj = self.token_manager.get_token(org)
-        # url = "%s/%s/messages" % (CONVERSATION_BASE_URL, conversation_id)
+        url = "%s/%s/messages" % (CONVERSATION_BASE_URL, conversation_id)
         # access_token = token_obj['accessToken']
-        # refresh_token = token_obj['refreshToken']
         access_token = self.token_manager.get_testing_token()
         r = requests.post(url, data=message, headers=get_drift_header(access_token)) 
         if (r.status_code != 200):
             # get new token and retry request.
+            refresh_token = token_obj['refreshToken']
             r = requests.post(OAUTH_URL, data=self.token_manager.post_refresh_data(refresh_token))
             data = r.json()
             new_access_token = data['accessToken']
