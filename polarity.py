@@ -45,7 +45,13 @@ class Polarity:
             self.file_bucket.put_object(Key=file_name, Body=data)
 
     def get_user_map(self, org_id):
-        users = self.drift_client.users.list()
+        response = requests.get(USER_URL, headers=get_drift_header(self.token_manager.get_testing_token()))
+        if response.status_code != 200:
+            # TODO: implement error handle
+            return {}
+        data = response.json()
+        users = data['data']
+
         user_map = {}
         for i, user in enumerate(users):
             user_map[user['id']] = user
