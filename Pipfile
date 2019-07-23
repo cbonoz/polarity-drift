@@ -5,6 +5,9 @@ name = "pypi"
 
 [packages]
 drift-python = "*"
+flask = "*"
+requests = "*"
+textblob = "*"
 
 [dev-packages]
 
