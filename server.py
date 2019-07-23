@@ -9,6 +9,8 @@ app = Flask(__name__)
 
 PORT = 3001
 
+ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
+
 # Helper class object for parsing sentiment from conversations
 p = Polarity()
 
@@ -39,7 +41,7 @@ def events():
     conversation_id = data['data']['conversationId']
     # only fire/generate a report when a conversation is changed to closed status.
     if conversation_closed:
-        conv_response = p.get_conversation_messages(conversation_id)
+        conv_response = p.get_conversation_messages(ACCESS_TOKEN, conversation_id)
         messages = conv_response['data']['messages']
         report_string = p.get_sentiment_report(messages)
         drift_message = p.generate_drift_message(org, report_string)

@@ -5,7 +5,8 @@ import requests
 import boto3
 from drift import Drift
 
-BASE_URL = "https://driftapi.com"
+POLARITY_ENV_VAR = os.getenv('POL_ENV', 'qa')
+BASE_URL = ("https://driftapi.com", "https://driftapiqa.com")[POLARITY_ENV_VAR == 'qa']
 
 OAUTH_URL = "%s/oauth2/token" % BASE_URL
 CONVERSATION_BASE_URL =  "%s/v1/conversations" % BASE_URL
@@ -76,7 +77,7 @@ class Polarity:
 
     def get_conversation_messages(self, token, conversation_id):
         url = "%s/conversations/%s/messages" % (BASE_URL, conversation_id)
-        requests.get(url, headers=get_drift_header(token))
+        response = requests.get(url, headers=get_drift_header(token))
         print(response.text)
         return response.json()
 
@@ -115,6 +116,8 @@ class Polarity:
         lines = []
         polarities = []
         for message in messages:
+            if 'body' not in message:
+                continue
             text = message['body']
             author_id = message['author']['id']
 
