@@ -18,9 +18,9 @@ CONTACT_URL = "%s/contacts" % BASE_URL
 USER_URL = "%s/users/list" % BASE_URL
 TABLE_NAME = "polarity"
 
-EMAIL_WIDTH = 20
+EMAIL_WIDTH = 30
 MIDDLE_WIDTH = 31
-LINE_WIDTH = 79
+LINE_WIDTH = 99
 TEXT_WIDTH = max(LINE_WIDTH - MIDDLE_WIDTH - EMAIL_WIDTH, 0)
 
 def generateHTMLResponse(statusCode, body):
@@ -109,7 +109,7 @@ class Polarity:
         lines = []
         polarities = []
         for i, message in enumerate(messages):
-            if 'body' not in message and message['type'] == 'chat':
+            if 'body' not in message or message['type'] != 'chat':
                 continue
 
             text = message['body']
@@ -124,9 +124,11 @@ class Polarity:
                 if response.status_code == 200:
                     data = response.json()
                     author_label = data.get('email', 'Site Visitor')
-                    visitor_email = data['data']['attributes']['email']
-                    if visitor_email:
-                        author_label = visitor_email
+                    attrs = data['data']['attributes']
+                    if 'email' in attrs:
+                        visitor_email = attrs['email']
+                        if visitor_email:
+                            author_label = visitor_email
 
             text = re.sub('<[^<]+?>', '', text)
             blob = TextBlob(text)
@@ -136,9 +138,9 @@ class Polarity:
             # print('polarity', polarity, text)
             bars = mag * "*"
             if polarity < 0:
-                graph = "{0:>10}|{1:<10}".format(bars, " "*10)
+                graph = "{0:>10}|{1:<10}".format(bars, " ")
             else:
-                graph = "{0:>10}|{1:<10}".format(" "*10, bars)
+                graph = "{0:>10}|{1:<10}".format(" ", bars)
             text_visible_len = min(len(text), TEXT_WIDTH)
             msg = "{0:<{x}}{1:^{y}}{2:>{z}}".format(author_label, graph, text[:text_visible_len], x=EMAIL_WIDTH, y=MIDDLE_WIDTH, z=TEXT_WIDTH)
 
