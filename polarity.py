@@ -60,7 +60,7 @@ class Polarity:
         return generateResponse(200, self.success_html)
 
     def get_summary_line(self, polarities):
-        avg = round(sum(polarities) / len(polarities) * 10, 1)
+        avg = round(float(sum(polarities)) / len(polarities) * 10, 1)
         last = polarities[-1]
         last_line = ""
         if avg > 0:
@@ -74,7 +74,7 @@ class Polarity:
             else:
                 last_line = "Try to keep the conversation more positive to maintain a good impression."
 
-        return "<br/><b>Polarity</b> Summary: <br/>Average score: %s<br/>%s" % (avg, last_line)
+        return "<br/>Average score: %.2f<br/>* %s" % (avg, last_line)
        
     def get_polarity_summary(self, messages):
         if not messages:
@@ -110,7 +110,7 @@ class Polarity:
 
     def get_sentiment_report(self, messages):
         # TODO: identify the parties in the conversation and insert names.
-        report_string = "<h3>Polarity:</h3>"
+        report_string = "<h3>Polarity Summary:</h3>"
         lines = self.get_polarity_summary(messages)
         report_string += "<p>" + "<br/>".join(lines) + "</p>"
 
@@ -123,7 +123,7 @@ class Polarity:
         url = "%s/%s/messages" % (CONVERSATION_BASE_URL, conversation_id)
         # access_token = token_obj['accessToken']
         access_token = self.token_manager.get_testing_token()
-        r = requests.post(url, data=json.loads(message), headers=get_drift_header(access_token)) 
+        r = requests.post(url, data=message, headers=get_drift_header(access_token)) 
         if r.status_code != 200:
             print('post message request failed', r.status_code, r.reason)
             # get new token and retry request.
@@ -135,9 +135,5 @@ class Polarity:
             r = requests.post(url, data=message, headers=get_drift_header(new_access_token))
         print('sent message')
 
-    def generate_drift_message(self, org, message):
-        return """{
-            "orgId": "%s"
-            "body": "%s",
-            "type": "private_prompt"
-        }""" % (org, message)
+    def generate_drift_message(self, body):
+        return {"body": body, "type": "private_prompt"}
