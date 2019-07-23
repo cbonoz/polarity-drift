@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "fa6090513ef2587ba855182601ff7e6ee55982126f4e8187dfdb733e63ee99de"
+            "sha256": "f9f887c713c319bc4f1b74f71583a844e5b6d02ff9c760b94147a6d4cb391b62"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,6 +16,22 @@
         ]
     },
     "default": {
+        "boto3": {
+            "hashes": [
+                "sha256:8c67ad9a9cbeb65a2edcb5f7568415b055a2de069800efcf78e278303dec498f",
+                "sha256:9d1f974bb37bf1a05691ab39b53a6933afaadfdd73e8d601bf6c4216ea6d72d8"
+            ],
+            "index": "pypi",
+            "version": "==1.9.193"
+        },
+        "botocore": {
+            "hashes": [
+                "sha256:47ffea20fd516605d3c03bedfbf01d3e6ed30d1be21520f21d0cba4fc0da426e",
+                "sha256:af49d272018442dd544160ee97fbaa6cfbf36b8a74e9eb41e6eed9f390133b56"
+            ],
+            "markers": "python_version >= '2.6' and python_version != '3.0.*' and python_version != '3.1.*'",
+            "version": "==1.12.193"
+        },
         "certifi": {
             "hashes": [
                 "sha256:046832c04d4e752f37383b628bc601a7ea7211496b4638f6514d0e5b9acc4939",
@@ -37,6 +53,14 @@
             ],
             "markers": "python_version != '3.0.*' and python_version != '3.3.*' and python_version >= '2.7' and python_version != '3.1.*' and python_version != '3.2.*'",
             "version": "==7.0"
+        },
+        "docutils": {
+            "hashes": [
+                "sha256:02aec4bd92ab067f6ff27a38a38a41173bf01bed8f89157768c1573f53e474a6",
+                "sha256:51e64ef2ebfb29cae1faa133b3710143496eca21c530f3f71424d77687764274",
+                "sha256:7a4bd47eaf6596e1295ecb11361139febe29b084a87bf005bf899f9a42edc3c6"
+            ],
+            "version": "==0.14"
         },
         "drift-python": {
             "hashes": [
@@ -77,6 +101,13 @@
             ],
             "markers": "python_version != '3.0.*' and python_version != '3.3.*' and python_version >= '2.7' and python_version != '3.1.*' and python_version != '3.2.*'",
             "version": "==2.10.1"
+        },
+        "jmespath": {
+            "hashes": [
+                "sha256:3720a4b1bd659dd2eecad0666459b9788813e032b83e7ba58578e48254e0a0e6",
+                "sha256:bde2aef6f44302dfb30320115b17d030798de8c4110e28d5cf6cf91a7a31074c"
+            ],
+            "version": "==0.9.4"
         },
         "markupsafe": {
             "hashes": [
@@ -119,6 +150,14 @@
             "markers": "python_version >= '2.6' and python_version != '3.1.*' and python_version != '3.0.*'",
             "version": "==3.4.4"
         },
+        "python-dateutil": {
+            "hashes": [
+                "sha256:7e6584c74aeed623791615e26efd690f29817a27c73085b78e4bad02493df2fb",
+                "sha256:c89805f6f4d64db21ed966fda138f8a5ed7a4fdbc1a8ee329ce1b74e3c74da9e"
+            ],
+            "markers": "python_version >= '2.7'",
+            "version": "==2.8.0"
+        },
         "requests": {
             "hashes": [
                 "sha256:11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4",
@@ -126,6 +165,14 @@
             ],
             "index": "pypi",
             "version": "==2.22.0"
+        },
+        "s3transfer": {
+            "hashes": [
+                "sha256:6efc926738a3cd576c2a79725fed9afde92378aa5c6a957e3af010cb019fac9d",
+                "sha256:b780f2411b824cb541dbcd2c713d0cb61c7d1bcadae204cdddda2b35cef493ba"
+            ],
+            "markers": "python_version >= '2.6' and python_version != '3.0.*' and python_version != '3.1.*'",
+            "version": "==0.2.1"
         },
         "six": {
             "hashes": [
@@ -148,7 +195,7 @@
                 "sha256:b246607a25ac80bedac05c6f282e3cdaf3afb65420fd024ac94435cabe6e18d1",
                 "sha256:dbe59173209418ae49d485b87d1681aefa36252ee85884c31346debd19463232"
             ],
-            "markers": "python_version < '4' and python_version != '3.2.*' and python_version != '3.1.*' and python_version != '3.3.*' and python_version != '3.0.*' and python_version >= '2.7'",
+            "markers": "python_version >= '3.4'",
             "version": "==1.25.3"
         },
         "werkzeug": {

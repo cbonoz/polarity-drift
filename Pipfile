@@ -8,6 +8,7 @@ drift-python = "*"
 flask = "*"
 requests = "*"
 textblob = "*"
+"boto3" = "*"
 
 [dev-packages]
 

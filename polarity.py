@@ -2,6 +2,7 @@ from textblob import TextBlob
 import urllib.parse as urlparse
 import os
 import requests
+import boto3
 from drift import Drift
 
 BASE_URL = "https://driftapi.com"
@@ -9,6 +10,8 @@ BASE_URL = "https://driftapi.com"
 OAUTH_URL = "%s/oauth2/token" % BASE_URL
 CONVERSATION_BASE_URL =  "%s/v1/conversations" % BASE_URL
 TABLE_NAME = "polarity"
+
+S3_BUCKET = os.getenv('POL_BUCKET', 'test-drift-bucket')
 CLIENT_ID = os.getenv('POL_ID', '')
 CLIENT_SECRET = os.getenv('POL_SECRET', '')
 
@@ -57,24 +60,19 @@ def save_org_token(org, access, refresh):
     cur.execute(cmd)
     cmd = """insert into %s (org, accessToken, refreshToken) values (%s, "%s", "%s")""" % (TABLE_NAME, org, access, refresh)
     cur.execute(cmd)
-
-# text = '''
-# The titular threat of The Blob has always struck me as the ultimate movie
-# monster: an insatiably hungry, amoeba-like mass able to penetrate
-# virtually any safeguard, capable of--as a doomed doctor chillingly
-# describes it--"assimilating flesh on contact.
-# Snide comparisons to gelatin be damned, it's a concept with the most
-# devastating of potential consequences, not unlike the grey goo scenario
-# proposed by technological theorists fearful of
-# artificial intelligence run rampant.
-# '''
-
+    
 class Polarity:
 
     def __init__(self):
+        self.s3 = boto3.resource('s3')
+        self.file_bucket = self.s3.Bucket(S3_BUCKET)
         self.drift_client = None
         with open('success.html', 'r') as f:
             self.success_html = f.read()
+
+    def upload(self, file_name):
+        data = open(file_name, 'rb') # image file (or binary)
+        self.file_bucket.put_object(Key=file_name, Body=data)
 
     def get_conversation_messages(self, token, conversation_id):
         url = "%s/conversations/%s/messages" % (BASE_URL, conversation_id)
