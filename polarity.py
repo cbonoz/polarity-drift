@@ -127,9 +127,9 @@ class Polarity:
             bars = mag * "*"
             msg = None
             if polarity < 0:
-                msg = "{:<10}{:>10}|".format(author_id, bars)
+                msg = "{:<10}{:>10}|".format(author_label, bars)
             else:
-                msg = "{:<10}{:10}|{}".format(author_id, "", bars)
+                msg = "{:<10}{:10}|{}".format(author_label, "", bars)
 
             msg = msg.replace(' ','*')
             lines.append(msg)
