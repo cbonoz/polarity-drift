@@ -13,6 +13,7 @@ BASE_URL = ("https://driftapi.com", "https://driftapiqa.com")[POLARITY_ENV_VAR =
 
 OAUTH_URL = "%s/oauth2/token" % BASE_URL
 CONVERSATION_BASE_URL =  "%s/v1/conversations" % BASE_URL
+CONTACT_URL = "%s/contacts" % BASE_URL
 USER_URL = "%s/users/list" % BASE_URL
 TABLE_NAME = "polarity"
 
@@ -107,7 +108,16 @@ class Polarity:
 
             text = message['body']
             author_id = message['author']['id']
-            author_email = None # TODO: get email based on author_id.
+            author_label = 'Site Visitor' 
+            # TODO: make this work
+            if author_id in user_map:
+                author_label = user_map[author_id]['email']
+            else:
+                url = "%s/%s" % (CONTACT_URL, author_id)
+                response = requests.get(url, headers=get_drift_header(self.token_manager.get_testing_token()))
+                if response.status_code == 200:
+                    data = response.json()
+                    author_label = data.get('email', 'Site Visitor')
 
             blob = TextBlob(text)
             polarity = blob.sentiment.polarity
