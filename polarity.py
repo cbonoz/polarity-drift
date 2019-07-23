@@ -15,7 +15,7 @@ OAUTH_URL = "%s/oauth2/token" % BASE_URL
 CONVERSATION_BASE_URL =  "%s/v1/conversations" % BASE_URL
 TABLE_NAME = "polarity"
 
-def generateResponse(statusCode, body):
+def generateHTMLResponse(statusCode, body):
     return {
         "statusCode": statusCode,
         "headers": {
@@ -51,13 +51,13 @@ class Polarity:
     def request_token(self, code):
         r = requests.post(OAUTH_URL, data=self.token_manager.post_token_data(code))
         if (r.status_code != 200):
-            return generateResponse(500, "<h3>Error registering:</h3><p>%s</p>" %r.text)
+            return generateHTMLResponse(500, "<h3>Error registering:</h3><p>%s</p>" %r.text)
 
         data = r.json()
 
         self.drift_client = Drift(data['accessToken'])
         self.token_manager.save_org_token(data['orgId'], data['accessToken'], data['refreshToken'])
-        return generateResponse(200, self.success_html)
+        return generateHTMLResponse(200, self.success_html)
 
     def get_summary_line(self, polarities):
         avg = round(float(sum(polarities)) / len(polarities) * 10, 1)
@@ -123,7 +123,7 @@ class Polarity:
         url = "%s/%s/messages" % (CONVERSATION_BASE_URL, conversation_id)
         # access_token = token_obj['accessToken']
         access_token = self.token_manager.get_testing_token()
-        r = requests.post(url, data=message, headers=get_drift_header(access_token)) 
+        r = requests.post(url, data=json.dumps(message), headers=get_drift_header(access_token)) 
         if r.status_code != 200:
             print('post message request failed', r.status_code, r.reason)
             # get new token and retry request.

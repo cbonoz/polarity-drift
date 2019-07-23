@@ -40,9 +40,11 @@ def events():
     if conversation_closed:
         conv_response = p.get_conversation_messages(conversation_id)
         messages = conv_response['data']['messages']
-        report_string = p.get_sentiment_report(messages)
-        drift_message = p.generate_drift_message(report_string)
-        p.send_message(org, conversation_id, drift_message)
+        print('messages', len(messages))
+        if messages:
+            report_string = p.get_sentiment_report(messages)
+            drift_message = p.generate_drift_message(report_string)
+            p.send_message(org, conversation_id, drift_message)
 
     return jsonify()
 
