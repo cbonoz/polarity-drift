@@ -9,17 +9,8 @@ BASE_URL = "https://driftapi.com"
 OAUTH_URL = "%s/oauth2/token" % BASE_URL
 CONVERSATION_BASE_URL =  "%s/v1/conversations" % BASE_URL
 TABLE_NAME = "polarity"
-CLIENT_ID = os.environ['POL_ID']
-CLIENT_SECRET = os.environ['POL_SECRET']
-
-# Fully specified postgres database url.
-DATABASE_URL = os.environ['POL_DATABASE_URL']
-url = urlparse.urlparse(DATABASE_URL)
-dbname = url.path[1:]
-user = url.username
-password = url.password
-host = url.hostname
-port = url.port
+CLIENT_ID = os.getenv('POL_ID', '')
+CLIENT_SECRET = os.getenv('POL_SECRET', '')
 
 def get_token(org):
     cmd = "select * from %s where org = %d limit 1"
