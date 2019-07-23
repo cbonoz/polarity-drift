@@ -13,6 +13,7 @@ BASE_URL = ("https://driftapi.com", "https://driftapiqa.com")[POLARITY_ENV_VAR =
 
 OAUTH_URL = "%s/oauth2/token" % BASE_URL
 CONVERSATION_BASE_URL =  "%s/v1/conversations" % BASE_URL
+USER_URL = "%s/users/list" % BASE_URL
 TABLE_NAME = "polarity"
 
 def generateHTMLResponse(statusCode, body):
@@ -27,13 +28,14 @@ def generateHTMLResponse(statusCode, body):
 def get_drift_header(token):
     return { "Authorization": "Bearer %s" % token, "Content-Type": 'application/json' }
 
+
 class Polarity:
 
     def __init__(self):
         self.token_manager = TokenManager()
         # self.s3 = boto3.resource('s3')
         self.file_bucket = None # self.s3.Bucket(S3_BUCKET)
-        self.drift_client = None # TODO: use drift-python
+        self.drift_client = Drift(self.token_manager.get_testing_token())
         with open('success.html', 'r') as f:
             self.success_html = f.read()
 
@@ -41,6 +43,14 @@ class Polarity:
         if self.file_bucket:
             data = open(file_name, 'rb') # image file (or binary)
             self.file_bucket.put_object(Key=file_name, Body=data)
+
+    def get_user_map(self, org_id):
+        users = self.drift_client.users.list()
+        user_map = {}
+        for i, user in enumerate(users):
+            user_map[user['id']] = user
+
+        return user_map
 
     def get_conversation_messages(self, conversation_id):
         url = "%s/conversations/%s/messages" % (BASE_URL, conversation_id)
@@ -76,17 +86,22 @@ class Polarity:
 
         return "<br/>Average score: %.2f<br/>* %s" % (avg, last_line)
        
-    def get_polarity_summary(self, messages):
+    def get_polarity_summary(self, org_id, messages):
         if not messages:
             return "<p>No messages to analyze</p>"
 
+        user_map = self.get_user_map(org_id)
+        contact_map = {}
+
         lines = []
         polarities = []
-        for message in messages:
+        for i, message in enumerate(messages):
             if 'body' not in message:
                 continue
+
             text = message['body']
             author_id = message['author']['id']
+            author_email = None # TODO: get email based on author_id.
 
             blob = TextBlob(text)
             polarity = blob.sentiment.polarity
@@ -104,14 +119,13 @@ class Polarity:
             lines.append(msg)
 
         summary_line = self.get_summary_line(polarities)
-        lines.append(summary_line) 
-
+        lines.append(summary_line)
         return lines
 
-    def get_sentiment_report(self, messages):
+    def get_sentiment_report(self, org_id, messages):
         # TODO: identify the parties in the conversation and insert names.
         report_string = "<h3>Polarity Summary:</h3>"
-        lines = self.get_polarity_summary(messages)
+        lines = self.get_polarity_summary(org_id, messages)
         report_string += "<p>" + "<br/>".join(lines) + "</p>"
 
         return report_string

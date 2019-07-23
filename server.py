@@ -42,7 +42,7 @@ def events():
         messages = conv_response['data']['messages']
         print('messages', len(messages))
         if messages:
-            report_string = p.get_sentiment_report(messages)
+            report_string = p.get_sentiment_report(org, messages)
             drift_message = p.generate_drift_message(report_string)
             p.send_message(org, conversation_id, drift_message)
 
