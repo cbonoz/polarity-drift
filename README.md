@@ -1,6 +1,8 @@
 <p align='center'>
     <img src='./assets/polarity_75.png'>
 </p>
+
+
 Polarity
 ---
 
