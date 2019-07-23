@@ -2,19 +2,17 @@ from textblob import TextBlob
 import urllib.parse as urlparse
 import os
 import requests
-import boto3
+# import boto3
 from token_manager import TokenManager
 from drift import Drift
 
 POLARITY_ENV_VAR = os.getenv('POL_ENV', 'qa')
+S3_BUCKET = os.getenv('POL_BUCKET', 'test-drift-bucket')
 BASE_URL = ("https://driftapi.com", "https://driftapiqa.com")[POLARITY_ENV_VAR == 'qa']
 
 OAUTH_URL = "%s/oauth2/token" % BASE_URL
 CONVERSATION_BASE_URL =  "%s/v1/conversations" % BASE_URL
 TABLE_NAME = "polarity"
-
-S3_BUCKET = os.getenv('POL_BUCKET', 'test-drift-bucket')
-
 
 def generateResponse(statusCode, body):
     return {
@@ -32,19 +30,20 @@ class Polarity:
 
     def __init__(self):
         self.token_manager = TokenManager()
-        self.s3 = boto3.resource('s3')
-        self.file_bucket = self.s3.Bucket(S3_BUCKET)
-        self.drift_client = None
+        # self.s3 = boto3.resource('s3')
+        self.file_bucket = None # self.s3.Bucket(S3_BUCKET)
+        self.drift_client = None # TODO: use drift-python
         with open('success.html', 'r') as f:
             self.success_html = f.read()
 
     def upload(self, file_name):
-        data = open(file_name, 'rb') # image file (or binary)
-        self.file_bucket.put_object(Key=file_name, Body=data)
+        if self.file_bucket:
+            data = open(file_name, 'rb') # image file (or binary)
+            self.file_bucket.put_object(Key=file_name, Body=data)
 
-    def get_conversation_messages(self, token, conversation_id):
+    def get_conversation_messages(self, conversation_id):
         url = "%s/conversations/%s/messages" % (BASE_URL, conversation_id)
-        response = requests.get(url, headers=get_drift_header(token))
+        response = requests.get(url, headers=get_drift_header(self.token_manager.get_testing_token()))
         print(response.text)
         return response.json()
 
@@ -118,10 +117,11 @@ class Polarity:
     
     # send message with retry
     def send_message(self, org, conversation_id, message):
-        token_obj = self.token_manager.get_token(org)
-        url = "%s/%s/messages" % (CONVERSATION_BASE_URL, conversation_id)
-        access_token = token_obj['accessToken']
-        refresh_token = token_obj['refreshToken']
+        # token_obj = self.token_manager.get_token(org)
+        # url = "%s/%s/messages" % (CONVERSATION_BASE_URL, conversation_id)
+        # access_token = token_obj['accessToken']
+        # refresh_token = token_obj['refreshToken']
+        access_token = self.token_manager.get_testing_token()
         r = requests.post(url, data=message, headers=get_drift_header(access_token)) 
         if (r.status_code != 200):
             # get new token and retry request.
