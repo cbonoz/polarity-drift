@@ -1,5 +1,5 @@
 import os
-from flask import request
+from flask import request, jsonify
 from flask import Flask
 import json
 
@@ -30,7 +30,10 @@ def events():
     raw_data = request.data
     data = json.loads(raw_data)
     print('received event', data)
-
+    event_type = data['type']
+    if event_type != 'conversation_status_updated':
+        return jsonify()
+        
     org = data['orgId']
     conversation_closed = data['data']['status'] == 'closed'
     conversation_id = data['data']['conversationId']
@@ -41,10 +44,8 @@ def events():
         report_string = p.get_sentiment_report(messages)
         drift_message = p.generate_drift_message(org, report_string)
         p.send_message(org, conversation_id, drift_message)
-        # no response needed.
 
-res = p.generate_chart([])
-print(res)
+    return jsonify()
 
 if __name__ == '__main__':
       app.run(port=PORT)

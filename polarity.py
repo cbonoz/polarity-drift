@@ -4,7 +4,6 @@ import urllib.parse as urlparse
 import os
 import requests
 from drift import Drift
-from ascii_art import Histogram, Bar, Chart
 
 BASE_URL = "https://driftapi.com"
 
@@ -129,14 +128,7 @@ class Polarity:
                 last_line = "Try to keep the conversation more positive to maintain a good impression."
 
         return "<br/><b>Polarity (%.1f): %s</b><br/>" % (avg, last_line)
-
-    def generate_chart(self, messages):
-        data = [
-            1, 5, 5, 13, 3, -2
-        ]
-        c = Chart(data, width=24, height=24, padding=2, point_char=u'+', negative_point_char=u'-', axis_char=u'|')
-        return c.render()
-
+       
     def get_polarity_summary(self, messages):
         if not messages:
             return "<p>No messages to analyze</p>"
