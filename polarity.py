@@ -19,7 +19,7 @@ USER_URL = "%s/users/list" % BASE_URL
 TABLE_NAME = "polarity"
 
 EMAIL_WIDTH = 30
-MIDDLE_WIDTH = 31
+MIDDLE_WIDTH = 25
 LINE_WIDTH = 99
 TEXT_WIDTH = max(LINE_WIDTH - MIDDLE_WIDTH - EMAIL_WIDTH, 0)
 
@@ -142,8 +142,7 @@ class Polarity:
             else:
                 graph = "{0:>10}|{1:<10}".format(" ", bars)
             text_visible_len = min(len(text), TEXT_WIDTH)
-            msg = "{0:<{x}}{1:^{y}}{2:>{z}}".format(author_label, graph, text[:text_visible_len], x=EMAIL_WIDTH, y=MIDDLE_WIDTH, z=TEXT_WIDTH)
-
+            msg = "{0:<{x}}{1:^{y}}{2:<{z}}".format(author_label, graph, text[:text_visible_len], x=EMAIL_WIDTH, y=MIDDLE_WIDTH, z=TEXT_WIDTH)
             # msg = msg.replace(' ','*')
             lines.append(msg)
 
@@ -153,10 +152,9 @@ class Polarity:
 
     def get_sentiment_report(self, org_id, messages):
         # TODO: identify the parties in the conversation and insert names.
-        report_string = "<h3>Polarity Summary:</h3>"
+        report_string = '<h3>Polarity Summary:</h3>'
         lines = self.get_polarity_summary(org_id, messages)
-        report_string += "<p>" + "<br/>".join(lines) + "</p>"
-
+        report_string += "<p style=\"font-family: var(--code-font-family);\">" + "<br/>".join(lines) + "</p>"
         return report_string
     
     # send message with retry
