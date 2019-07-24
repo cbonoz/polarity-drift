@@ -5,18 +5,26 @@ import requests
 import re 
 import json
 # import boto3
+import plotly
+import pandas as pd
+import chart_studio
+import chart_studio.plotly as py
+import plotly.tools as plotly_tools
+import plotly.graph_objs as go
 from token_manager import TokenManager
 from monkey_learn import MonkeyLearn
 from drift import Drift
+from collections import defaultdict
 
 POLARITY_ENV_VAR = os.getenv('POL_ENV', 'qa')
+chart_studio.tools.set_credentials_file(username='jwebel', api_key='riZIHptfW6hP7agBgvMG')
 
 
 S3_BUCKET = os.getenv('POL_BUCKET', 'test-drift-bucket')
 BASE_URL = ("https://driftapi.com", "https://driftapiqa.com")[POLARITY_ENV_VAR == 'qa']
 
 OAUTH_URL = "%s/oauth2/token" % BASE_URL
-CONVERSATION_BASE_URL =  "%s/v1/conversations" % BASE_URL
+CONVERSATION_BASE_URL = "%s/v1/conversations" % BASE_URL
 CONTACT_URL = "%s/contacts" % BASE_URL
 USER_URL = "%s/users/list" % BASE_URL
 TABLE_NAME = "polarity"
@@ -82,7 +90,7 @@ class Polarity:
     def get_conversation_messages(self, conversation_id):
         url = "%s/conversations/%s/messages" % (BASE_URL, conversation_id)
         response = requests.get(url, headers=get_drift_header(self.token_manager.get_testing_token()))
-        print(response.text)
+        #    print(response.text)
         return response.json()
 
     def request_token(self, code):
@@ -134,7 +142,7 @@ class Polarity:
 
         if self.monkey_learn.is_enabled():
             monkey_polarities = self.monkey_learn.get_sentiments(messages)
-
+        graph_data = []
         for i, message in enumerate(messages):
 
             text = message['body']
@@ -170,7 +178,8 @@ class Polarity:
 
             polarities.append(polarity)
             mag = int(abs(polarity) * 10)
-            # print('polarity', polarity, text)
+            graph_data.append([author_label, int(polarity * 10)])
+
             bars = mag * "*"
             if polarity < 0:
                 graph = "{0:>10}|{1:<10}".format(bars, " ")
@@ -197,11 +206,15 @@ class Polarity:
 
         summary_line = self.get_summary_line(polarities)
         lines.append(summary_line)
-
+        lines.append("<a href=\""+self.generate_polarity_graph(graph_data)+"\"> Click here for a graph the represents your conversations data</a>")
         return lines
 
     def get_sentiment_report(self, org_id, messages):
+
         report_string = '<h3>Polarity Summary:</h3>Conversation Highlights:<br/>'
+        # TODO: identify the parties in the conversation and insert names.
+        report_string += "<h4 style=\"font-family: var(--code-font-family);\">{0:<{x}}{1:^{y}}{2:<{z}}</h4>".format("email", "polarity score", "message", x=EMAIL_WIDTH, y=MIDDLE_WIDTH+10, z=TEXT_WIDTH)
+
         lines = self.get_polarity_summary(org_id, messages)
         if not lines:
             return None
@@ -229,3 +242,44 @@ class Polarity:
 
     def create_api_message(self, body):
         return {"body": body, "type": "private_prompt"}
+
+    def generate_drift_message(self, body):
+        return {"body": body, "type": "private_prompt"}
+
+    def generate_polarity_graph(self, graph_data):
+        x = []
+        new_dict = {}
+        for i, point in enumerate(graph_data):
+            x.append(i)
+            # y.append(str(point))
+            if point[0] not in new_dict:
+                new_dict[point[0]] = [point[1]]
+                continue
+            new_dict[point[0]].append(point[1])
+        all_data = []
+
+        for entry in new_dict:
+            fig = go.Scatter(x=x, y=new_dict[entry], mode='lines', name=entry)
+            all_data.append(fig)
+        layout = go.Layout(
+            title='Polarity of Messages Over the Conversation',
+            xaxis=dict(
+                title='Messages',
+                titlefont=dict(
+                    family='Courier New, monospace',
+                    size=18,
+                    color='#7f7f7f'
+                )
+            ),
+            yaxis=dict(
+                title='Polarity of Message',
+                titlefont=dict(
+                    family='Courier New, monospace',
+                    size=18,
+                    color='#7f7f7f'
+                )
+            )
+        )
+        fig = go.Figure(data=all_data, layout=layout)
+        url = py.plot(fig, filename='privacy-public', sharing='public', auto_open=False)
+        return url

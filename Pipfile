@@ -9,6 +9,9 @@ flask = "*"
 requests = "*"
 textblob = "*"
 "boto3" = "*"
+plotly = "*"
+pandas = "*"
+chart-studio = "==1.0.0"
 
 [dev-packages]
 
