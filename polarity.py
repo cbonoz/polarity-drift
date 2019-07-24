@@ -186,7 +186,7 @@ class Polarity:
             extractions = self.monkey_learn.get_keyword_extractions(raw_text)
             if extractions:
                 keywords = ', '.join(list(filter(lambda x: len(x) < 10, map(lambda x: x['parsed_value'], extractions))))
-                keywords_line = "Keywords: %s" % keywords
+                keywords_line = "<br/>Keywords: %s" % keywords
                 lines.append(keywords_line)
 
             classifications = self.monkey_learn.get_classification_extractions(raw_text)
