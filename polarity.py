@@ -201,7 +201,7 @@ class Polarity:
         return lines
 
     def get_sentiment_report(self, org_id, messages):
-        report_string = '<h3>Polarity Summary:</h3>Key Messages:<br/>'
+        report_string = '<h3>Polarity Summary:</h3>Conversation Highlights:<br/>'
         lines = self.get_polarity_summary(org_id, messages)
         if not lines:
             return None
