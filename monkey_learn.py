@@ -39,6 +39,7 @@ class MonkeyLearn:
     def is_enabled(self):
       return self.key is not None
 
+    # returns a list of keywords based on the passed in text.
     def get_keyword_extractions(self, text):
       body = {"data":[text]}
       response = requests.post(KEYWORD_URL, data=json.dumps(body), headers=get_monkey_header(self.key))
@@ -49,7 +50,8 @@ class MonkeyLearn:
       data = response.json()
       res = data[0]['extractions']
       return res
-    
+
+    # returns a list of classifications based on the passed in text.
     def get_classification_extractions(self, text):
       body = {"data":[text]}
       response = requests.post(CLASSIFICATION_URL, data=json.dumps(body), headers=get_monkey_header(self.key))
@@ -61,6 +63,7 @@ class MonkeyLearn:
       res = data[0]['classifications']
       return res
 
+    # takes a list of messages and returns an array of sentiment scores between -1 and 1
     def get_sentiments(self, messages):
           texts = list(map(get_body, messages))
           body = {"data":texts}
