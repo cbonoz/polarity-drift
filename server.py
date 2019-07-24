@@ -43,11 +43,13 @@ def events():
         print('messages', len(messages))
         if messages:
             report_string = p.get_sentiment_report(org, messages)
-            drift_message = p.generate_drift_message(report_string)
-            p.send_message(org, conversation_id, drift_message)
+            if report_string:
+                drift_message = p.create_api_message(report_string)
+                p.send_message(org, conversation_id, drift_message)
 
     return jsonify()
 
 if __name__ == '__main__':
-    app.run(port=int(PORT))
-    print("Polarity server started on port %d!" % PORT)
+    port = int(PORT)
+    app.run(port=port)
+    print("Polarity server started on port %d!" % port)
