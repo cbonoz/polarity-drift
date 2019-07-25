@@ -206,7 +206,7 @@ class Polarity:
 
         summary_line = self.get_summary_line(polarities)
         lines.append(summary_line)
-        lines.append("<a href=\""+self.generate_polarity_graph(graph_data)+"\"> Click here for a graph the represents your conversations data</a>")
+        lines.append("<a href=\""+self.generate_polarity_graph(graph_data)+"\"> Click here to see a graph of the conversation sentiment</a>")
         return lines
 
     def get_sentiment_report(self, org_id, messages):
@@ -264,7 +264,7 @@ class Polarity:
         layout = go.Layout(
             title='Polarity of Messages Over the Conversation',
             xaxis=dict(
-                title='Messages',
+                title='Message #',
                 titlefont=dict(
                     family='Courier New, monospace',
                     size=18,
