@@ -40,7 +40,7 @@ def events():
     if conversation_closed:
         conv_response = p.get_conversation_messages(conversation_id)
         messages = conv_response['data']['messages']
-        print('messages', len(messages))
+        print('Received Close Event - processing messages', len(messages))
         if messages:
             report_string = p.get_sentiment_report(org, messages)
             if report_string:
