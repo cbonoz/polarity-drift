@@ -201,7 +201,10 @@ class Polarity:
             classifications = self.monkey_learn.get_classification_extractions(raw_text)
             if classifications:
                 topics = ', '.join(list(map(lambda x: x['tag_name'], classifications)))
-                topics_line = "Topics: %s" % topics
+                topics_string = "Topic"
+                if len(classifications) > 1:
+                    topics_string += "s"
+                topics_line = "Matching %s: %s" % (topics_string, topics)
                 lines.append(topics_line)
 
         summary_line = self.get_summary_line(polarities)
@@ -211,9 +214,9 @@ class Polarity:
 
     def get_sentiment_report(self, org_id, messages):
 
-        report_string = '<h3>Polarity Summary:</h3>Conversation Highlights:<br/>'
+        report_string = '<h3>Polarity Summary</h3>Conversation Highlights:<br/>'
         # TODO: identify the parties in the conversation and insert names.
-        report_string += "<h4 style=\"font-family: var(--code-font-family);\">{0:<{x}}{1:^{y}}{2:<{z}}</h4>".format("email", "polarity score", "message", x=EMAIL_WIDTH, y=MIDDLE_WIDTH+10, z=TEXT_WIDTH)
+        report_string += "<h4 style=\"font-family: var(--code-font-family);\">{0:<{x}}{1:^{y}}{2:<{z}}</h4>".format("author", "polarity score", "message", x=EMAIL_WIDTH, y=MIDDLE_WIDTH+10, z=TEXT_WIDTH)
 
         lines = self.get_polarity_summary(org_id, messages)
         if not lines:
